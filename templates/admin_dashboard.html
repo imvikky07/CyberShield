@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard - CyberShield</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f7f7;
+      color: #333;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      background-color: #222;
+      color: white;
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+    }
+
+    .admin-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background-color: #2c3e50;
+      color: white;
+      padding-top: 30px;
+      position: fixed;
+      height: 100%;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 40px;
+      color: #ecf0f1;
+    }
+
+    .sidebar nav ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    .sidebar nav ul li {
+      margin-bottom: 25px;
+    }
+
+    .sidebar nav ul li a {
+      display: block;
+      color: #ecf0f1;
+      text-decoration: none;
+      padding: 12px 20px;
+      font-size: 18px;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar nav ul li a:hover {
+      background-color: #1abc9c;
+      transform: translateX(10px);
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 250px;
+      padding: 40px;
+      flex: 1;
+      padding-bottom: 60px;
+    }
+
+    .admin-topnav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #34495e;
+      color: white;
+      padding: 20px;
+    }
+
+    .admin-topnav h1 {
+      font-size: 24px;
+    }
+
+    /* Dashboard Section */
+    .dashboard-overview h2 {
+      margin-bottom: 20px;
+      font-size: 28px;
+      color: #34495e;
+    }
+
+    .dashboard-overview ul {
+      list-style-type: none;
+      margin-bottom: 40px;
+    }
+
+    .dashboard-overview ul li {
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+
+    .dashboard-overview ul li span {
+      font-weight: bold;
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 40px;
+    }
+
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+
+    th, td {
+      padding: 12px 20px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f1f1f1;
+      font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    tr:hover {
+      background-color: #ecf0f1;
+    }
+
+    button {
+      padding: 8px 15px;
+      background-color: #1abc9c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #16a085;
+    }
+
+    /* Form */
+    textarea {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      resize: vertical;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+      }
+
+      .main-content {
+        margin-left: 0;
+        padding: 20px;
+      }
+
+      .admin-topnav h1 {
+        font-size: 20px;
+      }
+
+      .sidebar nav ul li a {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="admin-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h2>CyberShield Admin</h2>
+      <nav>
+        <ul>
+          <li><a href="{{ url_for('admin_dashboard') }}">Overview</a></li>
+          <li><a href="#deleted">Deleted</a></li>
+          <li><a href="#flagged">Flagged</a></li>
+          <li><a href="#detector">Detector</a></li>
+          <li><a href="{{ url_for('admin_login') }}">Log Out</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+      <header class="admin-topnav">
+        <h1>Admin Dashboard</h1>
+      </header>
+
+      <div class="dashboard-overview">
+        <h2>Welcome, Admin</h2>
+        <ul>
+          <li>Total Messages: <span>{{ total_messages }}</span></li>
+          <li>Flagged Messages: <span>{{ flagged_messages_count }}</span></li>
+          <li>Total Users: <span>{{ total_users }}</span></li>
+        </ul>
+      </div>
+
+      <h2 id="deleted">AI-Deleted Cyberbullying Messages</h2>
+      {% if deleted_messages %}
+        <table>
+          <thead>
+            <tr><th>User</th><th>Content</th><th>Deleted At</th></tr>
+          </thead>
+          <tbody>
+            {% for username, content, timestamp in deleted_messages %}
+            <tr>
+              <td>{{ username }}</td>
+              <td>{{ content }}</td>
+              <td>{{ timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No deleted messages.</p>
+      {% endif %}
+
+      <h2 id="flagged">Flagged Messages (User-Reported)</h2>
+      {% if flagged_messages %}
+        <table>
+          <thead>
+            <tr><th>Username</th><th>Message</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            {% for msg_id, content, username in flagged_messages %}
+            <tr>
+              <td>{{ username }}</td>
+              <td>{{ content }}</td>
+              <td>
+                <form method="POST" action="{{ url_for('delete_flagged_message', id=msg_id) }}">
+                  <button type="submit">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No user-flagged messages.</p>
+      {% endif %}
+
+      <h2 id="detector">Manual Text Toxicity Detector</h2>
+      <form method="POST">
+        <textarea name="test_text" rows="4" placeholder="Paste text here to test..."></textarea>
+        <button type="submit">Analyze</button>
+      </form>
+
+      {% if test_result %}
+        <p><strong>Result:</strong> {{ test_result }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+<!-- Admin Dashboard Footer -->
+<footer style="font-size: 12px; padding: 5px 10px; text-align: center; background-color: #171616; position: fixed; bottom: 10px; width: 100%; z-index: 10;">
+  <p>&copy; 2025 CyberShield. All rights reserved.</p>
+</footer>
+
+
+</body>
+</html>
