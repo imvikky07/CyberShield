@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CyberShield - User Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<header class="site-header">
+  <h1>CyberShield</h1>
+  <nav>
+    <a href="{{ url_for('index') }}">Home</a>
+    <a href="{{ url_for('user_login') }}">User Login</a>
+    <a href="{{ url_for('admin_login') }}">Admin</a>
+  </nav>
+</header>
+
+<body>
+  <div class="auth-container">
+    <h2>CyberShield - User Login</h2>
+    <form action="{{ url_for('user_login') }}" method="POST">
+      <div class="input-group">
+        <input type="text" name="username" placeholder="Username" required>
+      </div>
+      <div class="input-group">
+        <input type="password" name="password" placeholder="Password" required>
+      </div>
+      <button type="submit" class="btn">Login</button>
+      <p>New user? <a href="{{ url_for('register') }}">Register here</a></p>
+    </form>
+  </div>
+
+  <footer>
+    &copy; 2025 CyberShield. All rights reserved.
+  </footer>
+</body>
+</html>
