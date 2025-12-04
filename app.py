@@ -5,30 +5,33 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 from sqlalchemy.exc import IntegrityError
 import os
-from huggingface_hub import login
 
+# ----------------- ML MODEL SETUP -----------------
 
-
-login(token="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")
-
-# Load model and tokenizer
-tokenizer = AutoTokenizer.from_pretrained("JungleLee/bert-toxic-comment-classification")
-model = AutoModelForSequenceClassification.from_pretrained("JungleLee/bert-toxic-comment-classification")
+# Load model and tokenizer (public Hugging Face model, no token needed)
+MODEL_NAME = "JungleLee/bert-toxic-comment-classification"
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME)
 classifier = pipeline("text-classification", model=model, tokenizer=tokenizer)
 
 def is_cyberbullying(message: str) -> bool:
     result = classifier(message)[0]
+    # Adjust labels/threshold based on model behavior
     return result['label'].lower() in ['toxic', 'label_1'] and result['score'] > 0.8
 
+# ----------------- FLASK APP SETUP -----------------
+
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'
+app.secret_key = 'your_secret_key_here'  # change this in production
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(basedir, "db.sqlite3")}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# Models
+# ----------------- MODELS -----------------
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
@@ -42,15 +45,12 @@ class Message(db.Model):
     flagged = db.Column(db.Boolean, default=False)
     user = db.relationship('User', backref='messages')
 
-
 class FlaggedMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Owner of the original message
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)   # Owner of original message
     flagged_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Who flagged it
     content = db.Column(db.Text, nullable=False)
     message_id = db.Column(db.Integer, db.ForeignKey('message.id'), nullable=False)
-
-
 
 class DeletedMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -62,8 +62,8 @@ class DeletedMessage(db.Model):
     message = db.relationship('Message', backref=db.backref('deleted_messages', lazy=True))
     user = db.relationship('User', backref=db.backref('deleted_messages', lazy=True))
 
+# ----------------- ROUTES -----------------
 
-# Routes
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -88,11 +88,10 @@ def user_login():
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, request.form['password']):
             session.update({'user_id': user.id, 'username': user.username, 'is_admin': False})
-            print(f"Logged in as: {session['username']}")  # Debugging
+            print(f"Logged in as: {session['username']}")
             return redirect(url_for('chat'))
         return "Invalid credentials"
     return render_template('user_login.html')
-
 
 @app.route('/admin_login', methods=['GET', 'POST'])
 def admin_login():
@@ -120,7 +119,7 @@ def chat():
             db.session.commit()
 
             if flagged:
-                # AI detected cyberbullying: delete immediately
+                # AI detected cyberbullying: delete immediately and archive
                 deleted = DeletedMessage(
                     user_id=session['user_id'],
                     message_id=msg.id,
@@ -132,13 +131,15 @@ def chat():
 
                 flash('Your message was detected as cyberbullying and has been deleted by the system.', 'danger')
 
-    # ✅ Load latest 5 messages with user info
     from sqlalchemy.orm import joinedload
-    messages = Message.query.options(joinedload(Message.user))\
-                .order_by(Message.id.desc()).limit(5).all()
+    messages = (
+        Message.query.options(joinedload(Message.user))
+        .order_by(Message.id.desc())
+        .limit(5)
+        .all()
+    )
 
     return render_template('chat.html', username=session['username'], messages=messages)
-
 
 @app.route('/flag/<int:msg_id>', methods=['POST'])
 def flag_message(msg_id):
@@ -146,7 +147,6 @@ def flag_message(msg_id):
     if 'user_id' not in session or session.get('is_admin'):
         return redirect(url_for('user_login'))
 
-    # Retrieve the message by its ID
     message = Message.query.get_or_404(msg_id)
 
     # Prevent users from flagging their own messages
@@ -154,18 +154,19 @@ def flag_message(msg_id):
         flash('You cannot flag your own message.', 'warning')
         return redirect(url_for('chat'))
 
-    # Check if the message has already been flagged by this user
-    already_flagged = FlaggedMessage.query.filter_by(message_id=msg_id, flagged_by=session['user_id']).first()
+    # Check if already flagged by this user
+    already_flagged = FlaggedMessage.query.filter_by(
+        message_id=msg_id, flagged_by=session['user_id']
+    ).first()
     if already_flagged:
         flash('You have already flagged this message.', 'info')
         return redirect(url_for('chat'))
 
-    # Add the flagged message to the FlaggedMessage table
     flagged = FlaggedMessage(
         user_id=message.user_id,
         content=message.content,
         message_id=message.id,
-        flagged_by=session['user_id']  # You'll need to have this column in the model
+        flagged_by=session['user_id']
     )
     db.session.add(flagged)
     db.session.commit()
@@ -173,53 +174,43 @@ def flag_message(msg_id):
     flash("Message flagged for review.", "success")
     return redirect(url_for('chat'))
 
-
-
 @app.route('/admin/delete_flagged/<int:id>', methods=['POST'])
 def delete_flagged_message(id):
     flagged_message = FlaggedMessage.query.get(id)
-    
+
     if not flagged_message:
         flash('Message not found', 'danger')
         return redirect(url_for('admin_dashboard'))
 
-    # Create a new DeletedMessage with the same message_id
     deleted_message = DeletedMessage(
-        user_id=flagged_message.user_id,  # or whatever logic you use for user_id
-        message_id=flagged_message.message_id,  # Ensure this is not None
+        user_id=flagged_message.user_id,
+        message_id=flagged_message.message_id,
         content=flagged_message.content
     )
 
-    # Add to the deleted message table
     db.session.add(deleted_message)
-    
-    # Optionally, remove the flagged message after adding it to DeletedMessage
     db.session.delete(flagged_message)
 
     try:
         db.session.commit()
         flash('Message deleted and archived successfully', 'success')
-    except IntegrityError as e:
-        db.session.rollback()  # Rollback in case of an error
+    except IntegrityError:
+        db.session.rollback()
         flash('Failed to delete the message', 'danger')
+
     print(f"Flagged message ID: {flagged_message.message_id}")
     return redirect(url_for('admin_dashboard'))
-
-
-
-
 
 @app.route('/admin/dashboard', methods=['GET', 'POST'])
 def admin_dashboard():
     if not session.get('is_admin'):
         return redirect(url_for('admin_login'))
 
-    # Basic stats
     total_messages = Message.query.count()
     flagged_messages_count = FlaggedMessage.query.count()
     total_users = User.query.count()
 
-    # Deleted messages (AI-removed)
+    # Deleted messages (AI-removed + admin-removed)
     deleted_messages = db.session.query(
         User.username,
         DeletedMessage.content,
@@ -241,7 +232,8 @@ def admin_dashboard():
             result = classifier(test_text)[0]
             test_result = f"{result['label']} ({round(result['score'], 2)})"
 
-    return render_template('admin_dashboard.html',
+    return render_template(
+        'admin_dashboard.html',
         total_messages=total_messages,
         flagged_messages_count=flagged_messages_count,
         total_users=total_users,
@@ -250,8 +242,15 @@ def admin_dashboard():
         test_result=test_result
     )
 
+# ----------------- TABLE CREATION -----------------
+
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
+# ----------------- LOCAL RUN -----------------
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run()
+    app.run(debug=True)
