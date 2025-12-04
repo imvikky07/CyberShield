@@ -1,5 +1,5 @@
 flask==2.3.3
-torch==2.3.0
+torch
 transformers==4.42.4
 sqlalchemy==2.0.30
 boto3==1.34.146
