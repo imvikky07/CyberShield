@@ -1,0 +1,170 @@
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(7, 11, 18, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-0);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+.brand:hover { text-decoration: none; }
+.brand span { color: var(--cyan); }
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.link {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-1);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.link:hover {
+  color: var(--text-0);
+  background: var(--bg-2);
+  text-decoration: none;
+}
+.link.active {
+  color: var(--cyan);
+  background: var(--cyan-glow);
+}
+.adminLink.active {
+  color: var(--purple);
+  background: rgba(155, 89, 245, 0.12);
+}
+
+.auth {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btnGhost {
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-1);
+  background: transparent;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.btnGhost:hover {
+  color: var(--text-0);
+  border-color: var(--border-bright);
+  background: var(--bg-2);
+  text-decoration: none;
+}
+
+.btnPrimary {
+  padding: 7px 18px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--bg-0);
+  background: var(--cyan);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.btnPrimary:hover {
+  background: #33ddff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0,212,255,0.3);
+  text-decoration: none;
+}
+
+.userChip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 5px;
+  border-radius: 40px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.userChip:hover {
+  border-color: var(--border-bright);
+  background: var(--bg-3);
+  text-decoration: none;
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--cyan-dim), var(--purple));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.username {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-0);
+}
+
+.roleBadge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(155, 89, 245, 0.2);
+  color: var(--purple);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.btnLogout {
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-2);
+  background: transparent;
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+.btnLogout:hover {
+  color: var(--red);
+  border-color: var(--red-dim);
+  background: var(--red-glow);
+}
