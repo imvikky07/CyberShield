@@ -10,6 +10,7 @@ db = SQLAlchemy()
 jwt = JWTManager()
 migrate = Migrate()
 
+
 def create_app(config_name=None):
     if config_name is None:
         config_name = os.environ.get('FLASK_ENV', 'default')
@@ -17,13 +18,24 @@ def create_app(config_name=None):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
 
+    # Initialize extensions
     db.init_app(app)
     jwt.init_app(app)
     migrate.init_app(app, db)
 
-    CORS(app,
-         resources={r"/api/*": {"origins": app.config['CORS_ORIGINS']}},
-         supports_credentials=True)
+    # ✅ FIXED CORS CONFIG
+    origins = app.config.get("CORS_ORIGINS", "*")
+
+    if isinstance(origins, str):
+        origins = [o.strip() for o in origins.split(",")]
+
+    CORS(
+        app,
+        resources={r"/api/*": {"origins": origins}},
+        supports_credentials=True,
+        allow_headers=["Content-Type", "Authorization"],
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    )
 
     # Register blueprints
     from .routes.auth import auth_bp
@@ -38,6 +50,7 @@ def create_app(config_name=None):
     app.register_blueprint(friends_bp, url_prefix='/api/friends')
     app.register_blueprint(ai_bp, url_prefix='/api/ai')
 
+    # Health check route
     @app.route('/api/health')
     def health():
         return {'status': 'ok', 'message': 'CyberShield API running'}
