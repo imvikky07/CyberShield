@@ -3,9 +3,10 @@ services:
     name: cybershield-backend
     env: python
     region: oregon
-    plan: starter  # upgrade if using Detoxify (needs more RAM)
+    plan: starter
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn run:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    pythonVersion: 3.11   
     envVars:
       - key: FLASK_ENV
         value: production
@@ -14,10 +15,8 @@ services:
       - key: JWT_SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        fromDatabase:
-          name: cybershield-db
-          property: connectionString
+        value: postgresql://postgres:YOUR_PASSWORD@db.nutrbacfrbmemeahmxep.supabase.co:5432/postgres
       - key: USE_FALLBACK_AI
-        value: "true"   # Set to "false" and upgrade plan to use real Detoxify
+        value: "true"
       - key: CORS_ORIGINS
         value: https://your-app.vercel.app
