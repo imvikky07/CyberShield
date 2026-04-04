@@ -7,10 +7,6 @@ psycopg2-binary==2.9.9
 python-dotenv==1.0.1
 werkzeug==3.0.3
 gunicorn==22.0.0
-
-# AI - use detoxify for Toxic-BERT
-# Comment out if deploying to Render free tier (memory limit)
-# and set USE_FALLBACK_AI=true env var instead
 detoxify==0.5.2
-torch==2.2.2
-transformers==4.40.2
+torch
+transformers
