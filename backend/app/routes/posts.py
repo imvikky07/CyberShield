@@ -77,10 +77,24 @@ def create_post():
 
     status_code = 201
     if analysis['status'] == 'blocked':
-        response_data['warning'] = 'Your post was blocked due to harmful content.'
-        status_code = 202
+        
+    # Auto-delete immediately — don't even save to DB
+        db.session.delete(post)
+        db.session.commit()
+        return jsonify({
+            'message': 'Post rejected',
+            'post': None,
+            'moderation': {
+                'status': 'deleted',
+                'toxicity_score': analysis['toxicity_score'],
+                'toxicity_label': analysis['toxicity_label'],
+                'is_flagged': True
+            },
+            'warning': '🚫 Your message was automatically deleted — harmful content detected.'
+        }), 200
+
     elif analysis['status'] == 'withheld':
-        response_data['warning'] = 'Your post is under review by moderators.'
+        response_data['warning'] = '⚠ Your post is under review by moderators.'
         status_code = 202
 
     return jsonify(response_data), status_code
