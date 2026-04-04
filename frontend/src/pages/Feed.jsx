@@ -76,17 +76,21 @@ export default function Feed() {
       const res = await postsAPI.createPost(content)
       const { moderation } = res.data
       if (moderation.status === 'visible') {
-        setPostMsg({ type: 'success', text: '✓ Post published successfully!' })
-        setContent('')
-        setAiWarning(null)
-        await fetchFeed(1)
-      } else if (moderation.status === 'withheld') {
-        setPostMsg({ type: 'warn', text: `⚠ Your post is under review (toxicity: ${(moderation.toxicity_score * 100).toFixed(0)}%).` })
-        setContent('')
-        setAiWarning(null)
-      } else {
-        setPostMsg({ type: 'error', text: `✕ Post blocked — harmful content detected (${(moderation.toxicity_score * 100).toFixed(0)}%). Please revise.` })
-      }
+  setPostMsg({ type: 'success', text: '✓ Post published successfully!' })
+  setContent('')
+  setAiWarning(null)
+  await fetchFeed(1)
+} else if (moderation.status === 'withheld') {
+  setPostMsg({ type: 'warn', text: `⚠ Your post is under review (toxicity: ${(moderation.toxicity_score * 100).toFixed(0)}%).` })
+  setContent('')
+  setAiWarning(null)
+} else if (moderation.status === 'deleted') {
+  setPostMsg({ type: 'error', text: `🚫 Your message was automatically deleted — harmful content detected (${(moderation.toxicity_score * 100).toFixed(0)}% toxic).` })
+  setContent('')
+  setAiWarning(null)
+} else {
+  setPostMsg({ type: 'error', text: `✕ Post blocked (${(moderation.toxicity_score * 100).toFixed(0)}% toxic). Please revise.` })
+}
     } catch (err) {
       setPostMsg({ type: 'error', text: err.response?.data?.error || 'Failed to post. Try again.' })
     } finally {
