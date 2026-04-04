@@ -8,7 +8,7 @@ class Config:
 
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         'DATABASE_URL',
-        'postgresql://postgres:Vivek123@localhost:5432/cybershield'
+        'postgresql://postgres:password@localhost:5432/cybershield'
     )
     # Fix Supabase/Render postgres:// -> postgresql://
     if SQLALCHEMY_DATABASE_URI and SQLALCHEMY_DATABASE_URI.startswith('postgres://'):

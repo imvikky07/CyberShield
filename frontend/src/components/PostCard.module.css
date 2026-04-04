@@ -118,9 +118,53 @@
   color: var(--cyan);
 }
 
+/* Action row below post content (feed view) */
+.actionRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  gap: 8px;
+}
+
+.reportBtn {
+  padding: 5px 13px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-2);
+  background: transparent;
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+.reportBtn:hover:not(:disabled) {
+  color: #ff8c00;
+  border-color: rgba(255,140,0,0.4);
+  background: rgba(255,140,0,0.07);
+}
+.reportBtn:disabled { opacity: 0.5; }
+
+.reportMsg {
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 6px;
+}
+.reportMsgOk {
+  color: var(--green);
+  background: rgba(0,255,136,0.07);
+  border: 1px solid rgba(0,255,136,0.2);
+}
+.reportMsgErr {
+  color: var(--red);
+  background: var(--red-glow);
+  border: 1px solid rgba(255,61,107,0.25);
+}
+
 .deleteBtn {
-  margin-left: auto;
-  padding: 4px 12px;
+  padding: 5px 12px;
   border-radius: 6px;
   font-size: 0.78rem;
   font-weight: 600;
@@ -128,6 +172,7 @@
   background: transparent;
   border: 1px solid var(--red-dim);
   transition: all 0.2s;
+  margin-left: auto;
 }
 .deleteBtn:hover {
   background: var(--red-glow);

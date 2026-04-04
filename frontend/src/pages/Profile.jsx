@@ -33,8 +33,11 @@ export default function Profile() {
     if (!confirm('Delete this post?')) return
     try {
       await postsAPI.deletePost(id)
-      setPosts(prev => prev.map(p => p.id === id ? { ...p, status: 'deleted' } : p))
-    } catch { alert('Failed to delete.') }
+      // Remove immediately from list — no stale card left behind
+      setPosts(prev => prev.filter(p => p.id !== id))
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to delete. Try again.')
+    }
   }
 
   const filtered = filter === 'all' ? posts : posts.filter(p => p.status === filter)

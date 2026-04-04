@@ -44,6 +44,7 @@ export const postsAPI = {
   getMyPosts: () => api.get('/posts/my'),
   createPost: (content) => api.post('/posts/', { content }),
   deletePost: (id) => api.delete(`/posts/${id}`),
+  reportPost: (id) => api.post(`/posts/${id}/report`),
 }
 
 // ── Admin ─────────────────────────────────────────────

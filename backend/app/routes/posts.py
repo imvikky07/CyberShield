@@ -86,6 +86,24 @@ def create_post():
     return jsonify(response_data), status_code
 
 
+@posts_bp.route('/<int:post_id>/report', methods=['POST'])
+@jwt_required()
+def report_post(post_id):
+    user_id = int(get_jwt_identity())
+    post = Post.query.get_or_404(post_id)
+
+    if post.user_id == user_id:
+        return jsonify({'error': 'You cannot report your own post'}), 400
+
+    # Flag it and push to withheld for admin review if not already moderated
+    post.is_flagged = True
+    if post.status == 'visible':
+        post.status = 'withheld'
+
+    db.session.commit()
+    return jsonify({'message': 'Post reported. Our moderators will review it.'}), 200
+
+
 @posts_bp.route('/<int:post_id>', methods=['DELETE'])
 @jwt_required()
 def delete_post(post_id):
